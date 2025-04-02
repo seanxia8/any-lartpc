@@ -1,0 +1,28 @@
+detector:
+  lx: 4.32
+  ly: 4.32
+  lz: 4.32
+  spacing_y: 0.5
+  spacing_z: 0.5
+  attenuation_length: 119.5
+  refractive_index: 1.47
+  PMT:
+    total_eff: 0.1
+    pmt_pepc: general
+    pmt_ang_eff: general
+    pmt_tts: general
+    t_threshold: 0.05
+    charge_range: 10
+    charge_resolution: 100
+    time_min: -5
+    time_max: 15
+    time_resolution: 100
+
+photon:
+  n_photon: 10000
+  resolution: 0.2
+
+io:
+  writer:
+    output_dir: /sdf/home/j/junjie/sdf-data/FM/playground/first_trial
+    output_prefix: first_trial
