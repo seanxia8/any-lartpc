@@ -22,7 +22,7 @@ detector:
 
 photon:
   sample: True
-  n_photon: 10000000
+  n_photon: 1000000
   resolution: 100
 
 io:
