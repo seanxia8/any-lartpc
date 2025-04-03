@@ -6,7 +6,7 @@ train:
         lr: 5.e-5
     resume: False
 photonlib:
-    file_path: /sdf/home/j/junjie/sdf-data/FM/playground/first_trial/first_trial_4320x4320x4320_10000000_8_[1-3].h5
+    file_path: /sdf/home/j/junjie/sdf-data/FM/playground/first_trial/first_trial_4320x4320x4320_10000000_8.h5
 logger:
     dir_name: /sdf/home/j/junjie/sdf-data/FM/playground/first_trial/logs
     file_name: log_first_trial.csv
