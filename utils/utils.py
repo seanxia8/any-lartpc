@@ -1,4 +1,7 @@
 import torch
+import yaml
+import glob
+import os
 def place_hexa_opticsensors(lx, ly, lz, spacing_y, spacing_z):
     '''
     Generate hexagonal grid of PMTs on the y-z plane of a cubic detector
@@ -60,9 +63,45 @@ def place_photon_origin(lx, ly, lz, spacing_photon):
     y = y.to(torch.float32)
     z = z.to(torch.float32)
 
-    x = torch.tile(x, (3, 1, 1, 1)).reshape(3, -1)
-    y = torch.tile(y, (3, 1, 1, 1)).reshape(3, -1)
-    z = torch.tile(z, (3, 1, 1, 1)).reshape(3, -1)
-
     photon_coords = torch.column_stack((x.flatten(), y.flatten(), z.flatten()))
     return photon_coords
+
+def get_config_dir():
+    return os.path.join(os.path.dirname(__file__),'../config')
+
+def list_config(full_path=False):
+
+    fs = glob.glob(os.path.join(get_config_dir(), '*.yaml'))
+
+    if full_path:
+        return fs
+
+    return [os.path.basename(f)[:-5] for f in fs]
+
+def get_config(name):
+
+    options = list_config()
+    results = list_config(True)
+
+    if name in options:
+        return results[options.index(name)]
+
+    alt_name = name + '.yaml'
+    if alt_name in options:
+        return results[options.index(alt_name)]
+
+    print('No data found for config name:',name)
+    raise NotImplementedError
+def load_config(name:str):
+
+    return yaml.safe_load(open(get_config(name),'r'))
+def get_unique_filename(filename):
+    base, ext = os.path.splitext(filename)  # Split the name and extension
+    index = 1
+    new_filename = filename
+
+    while os.path.exists(new_filename):
+        new_filename = f"{base}_{index}{ext}"
+        index += 1
+
+    return new_filename

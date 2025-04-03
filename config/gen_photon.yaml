@@ -1,13 +1,15 @@
 detector:
-  lx: 4.32
-  ly: 4.32
-  lz: 4.32
-  spacing_y: 0.5
-  spacing_z: 0.5
-  attenuation_length: 119.5
-  refractive_index: 1.47
+  lx: 4320
+  ly: 4320
+  lz: 4320
+  gap_x: 5
+  spacing_y: 500
+  spacing_z: 500
+  cathode_gap: 8
+  attenuation_length: 1195
+  refractive_index: 1.2373
   PMT:
-    total_eff: 0.1
+    total_eff: 0.2
     pmt_pepc: general
     pmt_ang_eff: general
     pmt_tts: general
@@ -19,10 +21,13 @@ detector:
     time_resolution: 100
 
 photon:
-  n_photon: 10000
-  resolution: 0.2
+  sample: True
+  n_photon: 10000000
+  resolution: 100
 
 io:
+  loader:
+    input_file: /sdf/home/j/junjie/sdf-data/FM/playground/first_trial/first_trial_4320x4320x4320_10000000_8.h5
   writer:
     output_dir: /sdf/home/j/junjie/sdf-data/FM/playground/first_trial
     output_prefix: first_trial

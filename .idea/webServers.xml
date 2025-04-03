@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="4dce9148-7fc6-44a8-8565-a231f8490b9b" name="s3df">
+        <fileTransfer rootFolder="/sdf/home/j/junjie/FM" accessType="SFTP" host="s3dflogin.slac.stanford.edu" port="22" sshConfigId="e2c72ee1-d45e-4b08-b51c-ca90c7ad0da0" sshConfig="junjie@s3dflogin.slac.stanford.edu:22 key" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" isUseRsync="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
