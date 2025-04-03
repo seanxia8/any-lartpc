@@ -2,6 +2,7 @@ import torch
 import h5py
 from algorithms import LArTPC_general, dot_steel_PMT, PMT_angle_general
 from utils import place_photon_origin, get_unique_filename
+import time
 
 #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #torch.set_default_tensor_type(torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor)
@@ -42,12 +43,18 @@ def gen_h5_photon(cfg:dict):
         photon_origins = place_photon_origin(lartpc.lx, lartpc.ly, lartpc.lz, photon_reso)
         n_photon = torch.full((photon_origins.shape[0],), n_photon, dtype=torch.int16).unsqueeze(1)
 
+    t_photon = torch.rand(n_photon.shape, dtype=torch.float32)
     out_filename = get_unique_filename(temp_filename)
 
+    tstart = time.time()
     visi_factor, angle_values, distance_values = lartpc.geometric_factor(photon_origins)
     time_of_flight_values = lartpc.tof
+    print(f"Took {time.time() - tstart} to generate the PMT visibility and photon angles.")
 
+    tstart = time.time()
     pmt_model.compute_pmt_eff(angle_values, n_photon)
+    print(f"Took {time.time() - tstart} to generate the PMT efficiencies.")
+
     efficiency_values = pmt_model.pmt_eff
 
     with h5py.File(out_filename, 'w') as f:
@@ -59,6 +66,7 @@ def gen_h5_photon(cfg:dict):
 
         pmt_group.create_dataset("positions", data=lartpc.pmt_coords.detach().cpu().numpy())
         photon_group.create_dataset("origins", data=photon_origins.detach().cpu().numpy())
+        photon_group.create_dataset("times", data = t_photon.detach().cpu().numpy())
         #photon_group.create_dataset("n_photon", data=n_photon.numpy())
         data_group.create_dataset("visibility", data=visi_factor.detach().cpu().numpy())
         data_group.create_dataset("pmt_efficiency", data=efficiency_values.detach().cpu().numpy())
