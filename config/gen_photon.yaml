@@ -6,9 +6,9 @@ detector:
   spacing_y: 500
   spacing_z: 500
   cathode_gap: 8
-  attenuation_length: 1195
   refractive_index: 1.2373
   PMT:
+    radius: 50
     total_eff: 0.2
     pmt_pepc: general
     pmt_ang_eff: general
@@ -22,7 +22,8 @@ detector:
 
 photon:
   sample: True
-  n_photon: 1000000
+  n_photon: 30000
+  n_photon_pos: 1000000
   resolution: 100
 
 io:

@@ -14,29 +14,47 @@ class LArTPC_general():
         self.cathode_gap = cfg.get('cathode_gap', 10)
 
         self.pmt_coords = place_hexa_opticsensors(self.lx+2*self.gap_x, self.ly, self.lz, self.spacing_y, self.spacing_z)
+        self.pmt_radius = cfg['PMT'].get('pmt_radius', 50)  # PMT radius in mm
 
         self.n_opticsensor = self.pmt_coords.shape[0]
-        self.att = cfg.get("attenuation", 1095) # attenuation length in mm
-        self.k = 1 / self.att
+        #self.att = cfg.get("attenuation", 1095) # attenuation length in mm
+        #self.k = 1 / self.att
 
         self.refra_index = cfg.get('refractive_index', 1.5)
         self.tof = None
 
         self.speed_of_light = 299.792 / self.refra_index # mm/ns
 
-    def geometric_factor(self, coords):
+    def geometric_factor(self, coords, flip_coin):
         assert self.pmt_coords is not None, 'PMT coordinates not defined.'
-        assert coords.shape[1] == self.pmt_coords.shape[1], ValueError("Position coordinates not correct.")
-        r = torch.cdist(coords, self.pmt_coords)
-        mask_0 = r > 0
-        displace = coords[:, None, 0] - self.pmt_coords[None,:,0]
-        mask_cathode = torch.abs(displace) <= (0.5*self.lx + self.gap_x - 0.5*self.cathode_gap)
-        sin_angle = displace / r
+        assert coords.shape[-1] == self.pmt_coords.shape[-1], ValueError("Position coordinates not correct.")
+        id = int(flip_coin)
 
-        visi_factor = torch.exp(-self.k * r) / r ** 2
-        self.tof = r*mask_0*mask_cathode / self.speed_of_light
+        r = torch.cdist(coords, self.pmt_coords[id])
+        r_sq = r ** 2
+        displace = coords[:, None, 0] - self.pmt_coords[id][None,:,0]
+        #mask_cathode = torch.abs(displace) <= (0.5*self.lx + self.gap_x - 0.5*self.cathode_gap)
 
-        return visi_factor*mask_0*mask_cathode, torch.rad2deg(torch.arcsin(sin_angle)), r
+        # Optimize the final return operation, in-place operations if possible
+        sin_angle = displace / r  # Sin angle calculation
+        angle_rad = torch.arcsin(sin_angle)  # Use pre-calculated sin_angle
+        pmt_solid_angle = self.pmt_radius**2 * sin_angle**2 / r_sq
+        visi_factor = pmt_solid_angle / r_sq / 4
+        self.tof = r / self.speed_of_light
+
+        '''
+        if flip_coin:
+            visibility = torch.stack((visi_factor, torch.zeros_like(visi_factor)), dim=-1)
+            angle_rad = torch.stack((ang_rad, torch.zeros_like(angle_rad)), dim=-1)
+            self.tof = torch.stack((self.tof, torch.zeros_like(self.tof)), dim=-1)
+        else:
+            visibility = torch.stack((torch.zeros_like(visi_factor), visi_factor), dim=-1)
+            angle_rad = torch.stack((torch.zeros_like(angle_rad), angle_rad), dim=-1)
+            self.tof = torch.stack((torch.zeros_like(self.tof), self.tof), dim=-1)
+        '''
+
+        return visi_factor, angle_rad
+
     @property
     def get_tof(self):
         return self.tof

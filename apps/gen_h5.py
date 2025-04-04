@@ -26,34 +26,37 @@ def gen_h5_photon(cfg:dict):
     photon_cfg = cfg['photon']
     is_sampled = photon_cfg.get('sample', True)
     n_photon = photon_cfg.get('n_photon', 10000)
-    photon_reso = photon_cfg.get('resolution', 0.2)
+    n_photon_pos = photon_cfg.get('n_photon_pos', 50000)
+    photon_reso = photon_cfg.get('resolution', 20)
 
     out_dir = cfg['io']['writer']['output_dir']
     out_prefix = cfg['io']['writer']['output_prefix']
 
     if is_sampled:
-        temp_filename = f"{out_dir}/{out_prefix}_{lartpc.lx}x{lartpc.ly}x{lartpc.lz}_{n_photon}_{lartpc.cathode_gap}.h5"
-        scaling_factors = torch.tensor([lartpc.lx, lartpc.ly, lartpc.lz], dtype=torch.float32)
-        offsets = scaling_factors / 2
-
-        photon_origins = torch.rand((n_photon, 3), dtype=torch.float32) * scaling_factors - offsets
-        n_photon = torch.full((photon_origins.shape[0],), 1000, dtype=torch.int16).unsqueeze(1)
+        temp_filename = f"{out_dir}/{out_prefix}_{lartpc.lx}x{lartpc.ly}x{lartpc.lz}_{n_photon_pos}_{lartpc.cathode_gap}.h5"
+        scaling_factors = torch.tensor([lartpc.lx / 2 - lartpc.cathode_gap / 2, lartpc.ly, lartpc.lz], dtype=torch.float32)
+        offsets = torch.tensor([lartpc.cathode_gap / 2, 0, 0])
+        photon_origins = torch.rand((n_photon_pos, 3), dtype=torch.float32) * scaling_factors + offsets
+        flip_coin = torch.rand(1).item() < 0.5
+        if flip_coin:
+            photon_origins[:,0] *= -1
     else:
         temp_filename = f"{out_dir}/{out_prefix}_{lartpc.lx}x{lartpc.ly}x{lartpc.lz}_{n_photon}_res_{photon_reso}_{lartpc.cathode_gap}.h5"
         photon_origins = place_photon_origin(lartpc.lx, lartpc.ly, lartpc.lz, photon_reso)
-        n_photon = torch.full((photon_origins.shape[0],), n_photon, dtype=torch.int16).unsqueeze(1)
+
+    n_photon = torch.full((photon_origins.shape[0],), n_photon, dtype=torch.int16).unsqueeze(1)
 
     t_photon = torch.rand(n_photon.shape, dtype=torch.float32)
     out_filename = get_unique_filename(temp_filename)
 
-    tstart = time.time()
-    visi_factor, angle_values, distance_values = lartpc.geometric_factor(photon_origins)
+    #tstart = time.time()
+    visi_factor, angle_values = lartpc.geometric_factor(photon_origins, flip_coin)
     time_of_flight_values = lartpc.tof
-    print(f"Took {time.time() - tstart} to generate the PMT visibility and photon angles.")
+    #print(f"Took {time.time() - tstart} to generate the PMT visibility and photon angles.")
 
-    tstart = time.time()
+    #tstart = time.time()
     pmt_model.compute_pmt_eff(angle_values, n_photon)
-    print(f"Took {time.time() - tstart} to generate the PMT efficiencies.")
+    #print(f"Took {time.time() - tstart} to generate the PMT efficiencies.")
 
     efficiency_values = pmt_model.pmt_eff
 
@@ -71,7 +74,7 @@ def gen_h5_photon(cfg:dict):
         data_group.create_dataset("visibility", data=visi_factor.detach().cpu().numpy())
         data_group.create_dataset("pmt_efficiency", data=efficiency_values.detach().cpu().numpy())
         data_group.create_dataset("angle", data=angle_values.detach().cpu().numpy())
-        data_group.create_dataset("distance", data=distance_values.detach().cpu().numpy())
+        #data_group.create_dataset("distance", data=distance_values.detach().cpu().numpy())
         data_group.create_dataset("time_of_flight", data=time_of_flight_values.detach().cpu().numpy())
 
     print(f"HDF5 file {out_filename} written successfully.")

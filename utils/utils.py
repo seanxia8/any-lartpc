@@ -30,11 +30,13 @@ def place_hexa_opticsensors(lx, ly, lz, spacing_y, spacing_z):
 
     y = torch.tile(y_side, (2, 1, 1)).reshape(2, -1)
     z = torch.tile(z_side, (2, 1, 1)).reshape(2, -1)
-    x = torch.vstack((torch.full((y.shape[1],), lx / 2), torch.full((y.shape[1],), -lx / 2)))
+    x = torch.vstack((torch.full((y.shape[1],), -lx / 2), torch.full((y.shape[1],), lx / 2)))
     # print(x, y, z)
     # Shift every other row to create a hexagonal pattern
 
-    pmt_coords = torch.column_stack((x.flatten(), y.flatten(), z.flatten()))
+    #pmt_coords = torch.column_stack((x.flatten(), y.flatten(), z.flatten()))
+    # change to swap between the sides
+    pmt_coords = torch.stack((x,y,z), dim=-1)
     return pmt_coords
 
 def place_photon_origin(lx, ly, lz, spacing_photon):

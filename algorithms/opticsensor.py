@@ -65,7 +65,7 @@ def PMT_angle_general(x: torch.Tensor, **kwargs):
 
     sigmoid_coeff = kwargs.get('sigmoid_coeff', 0.15)
     # cos_45 = torch.cos(torch.deg2rad(torch.tensor(45.0)))  # Convert 45 degrees to cosine value
-    efficiency = 1 - 1 / (1 + torch.exp(-sigmoid_coeff * (torch.abs(90 - x) - 45)))
+    efficiency = 1 - 1 / (1 + torch.exp(-sigmoid_coeff * (torch.abs(np.pi/2 - x) - np.pi/4)))
     # efficiency = 1/(1+torch.exp(-sigmoid_coeff*(torch.abs(cos_x))))
     return efficiency
 
