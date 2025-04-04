@@ -132,9 +132,10 @@ class dot_steel_PMT():
         else:
             raise ValueError(f"Unknown angular response model: {self.pmt_ang_eff}")
 
-        self.n_PE = (n_photons * self.pmt_eff).int()
+        n_photons = n_photons.to(self.pmt_eff.device)
+        self.n_PE = (n_photons * self.pmt_eff).detach().cpu().int()
         self.max_n = int(torch.max(self.n_PE).item())
-        self.hit_mask = self.n_PE > 0
+        #self.hit_mask = self.n_PE > 0
 
     def read_pmt_Q(self, **kwargs):
         """

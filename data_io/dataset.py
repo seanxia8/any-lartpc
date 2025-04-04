@@ -16,6 +16,7 @@ class MCset(Dataset):
 
         self._pmt_coords = []
         self.photon_origins = []
+        self.photon_times = []
         self.visi_factor = []
         self.eff_values = []
         self.angle_values = []
@@ -52,10 +53,11 @@ class MCset(Dataset):
                     self._pmt_coords.append(f['/geometry/pmt/positions'][:])
                 self.photon_origins.append(f['/geometry/photon/origins'][:])
                 #self._n_photon.append(f['/geometry/photon/n_photon'][:])
+                self.photon_times.append(f['/geometry/photon/times'][:])
                 self.visi_factor.append(f['/data/visibility'][:])
                 self.eff_values.append(f['/data/pmt_efficiency'][:])
                 self.angle_values.append(f['/data/angle'][:])
-                self.distance_values.append(f['/data/distance'][:])
+                #self.distance_values.append(f['/data/distance'][:])
                 self.time_of_flight_values.append(f['/data/time_of_flight'][:])
 
         self._pmt_coords = np.array(self._pmt_coords)
@@ -64,10 +66,11 @@ class MCset(Dataset):
 
         self.photon_origins = np.array(self.photon_origins).reshape(-1, 3)
         #self._n_photon = np.array(self._n_photon).reshape(-1, n_photon_origins)
+        self.photon_times = np.array(self.photon_times).reshape(-1, 1)
         self.visi_factor = np.array(self.visi_factor).reshape(-1, n_pmt)
         self.eff_values = np.array(self.eff_values).reshape(-1, n_pmt)
         self.angle_values = np.array(self.angle_values).reshape(-1, n_pmt)
-        self.distance_values = np.array(self.distance_values).reshape(-1, n_pmt)
+        #self.distance_values = np.array(self.distance_values).reshape(-1, n_pmt)
         self.time_of_flight_values = np.array(self.time_of_flight_values).reshape(-1, n_pmt)
     @property
     def pmts(self):
@@ -104,10 +107,11 @@ class MCset(Dataset):
         output = {
             'evIdx': idx,
             'photon_origins': self.photon_origins[idx],
+            'photon_times': self.photon_times[idx],
             'visibility': self.visi_factor[idx],
             'pmt_efficiency': self.eff_values[idx],
             'angle': self.angle_values[idx],
-            'distance': self.distance_values[idx],
+            #'distance': self.distance_values[idx],
             'time_of_flight': self.time_of_flight_values[idx]
         }
         return output

@@ -23,7 +23,7 @@ detector:
 photon:
   sample: True
   n_photon: 30000
-  n_photon_pos: 1000000
+  n_photon_pos: 50000
   resolution: 100
 
 io:

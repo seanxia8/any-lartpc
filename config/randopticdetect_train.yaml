@@ -1,25 +1,26 @@
 train:
     max_epochs: 2000
-    save_every_epochs: 5
+    save_every_epochs: 50
     optimizer_class: Adam
     optimizer_param:
-        lr: 5.e-5
+        lr: 5.e-6
     resume: False
-photonlib:
-    file_path: /sdf/home/j/junjie/sdf-data/FM/playground/first_trial/first_trial_4320x4320x4320_10000000_8.h5
+#photonlib:
+#    file_path: /sdf/home/j/junjie/sdf-data/FM/playground/first_trial/first_trial_4320x4320x4320_10000000_8.h5
 logger:
     dir_name: /sdf/home/j/junjie/sdf-data/FM/playground/first_trial/logs
     file_name: log_first_trial.csv
-    log_every_nstep: 17
+    log_every_nsteps: 1
     analysis:
         vis_bias:
-            threshold: 4.5e-5
+            threshold: 4.5e-12
+
 model:
     network:
-        in_features: 131
+        in_features: 67
         hidden_features: 256
         hidden_layers: 5
-        out_features: 128
+        out_features: 64
     ckpt_file: ""
     output_scale:
         fix: True
@@ -31,7 +32,7 @@ data:
     dataset:
         weight:
             method: "vis"
-            threshold: 1.e-8
+            threshold: 1.e-12
             factor: 1.e+6
     loader:
         batch_size: 100000

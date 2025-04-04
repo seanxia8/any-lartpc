@@ -28,6 +28,7 @@ class LArTPC_general():
     def geometric_factor(self, coords, flip_coin):
         assert self.pmt_coords is not None, 'PMT coordinates not defined.'
         assert coords.shape[-1] == self.pmt_coords.shape[-1], ValueError("Position coordinates not correct.")
+        self.pmt_coords = self.pmt_coords.to(coords.device)
         id = int(flip_coin)
 
         r = torch.cdist(coords, self.pmt_coords[id])
@@ -39,7 +40,8 @@ class LArTPC_general():
         sin_angle = displace / r  # Sin angle calculation
         angle_rad = torch.arcsin(sin_angle)  # Use pre-calculated sin_angle
         pmt_solid_angle = self.pmt_radius**2 * sin_angle**2 / r_sq
-        visi_factor = pmt_solid_angle / r_sq / 4
+        # r in mm, multiply 1.E+6 to bring visibility to m^-2
+        visi_factor = 1.E+6 * pmt_solid_angle / r_sq / 4
         self.tof = r / self.speed_of_light
 
         '''

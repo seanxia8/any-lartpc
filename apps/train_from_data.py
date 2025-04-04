@@ -11,7 +11,7 @@ from slar.optimizers import optimizer_factory
 from slar.utils import CSVLogger, get_device
 from photonlib import AABox
 
-def train(cfg : dict, lartpc: LArTPC_general, mc: MCset):
+def train_from_data(cfg : dict, lartpc: LArTPC_general, mc: MCset):
     '''
     A function to run an optimization loop for SirenVis model.
     Configuration specific to this function is "train" at the top level.
