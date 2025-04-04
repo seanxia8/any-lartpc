@@ -16,7 +16,7 @@ class LArTPC_general():
         self.pmt_coords = place_hexa_opticsensors(self.lx+2*self.gap_x, self.ly, self.lz, self.spacing_y, self.spacing_z)
         self.pmt_radius = cfg['PMT'].get('pmt_radius', 50)  # PMT radius in mm
 
-        self.n_opticsensor = self.pmt_coords.shape[0]
+        #self.n_opticsensor = self.pmt_coords.shape[0]
         #self.att = cfg.get("attenuation", 1095) # attenuation length in mm
         #self.k = 1 / self.att
 
