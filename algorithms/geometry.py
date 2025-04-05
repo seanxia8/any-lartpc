@@ -29,32 +29,20 @@ class LArTPC_general():
         assert self.pmt_coords is not None, 'PMT coordinates not defined.'
         assert coords.shape[-1] == self.pmt_coords.shape[-1], ValueError("Position coordinates not correct.")
         self.pmt_coords = self.pmt_coords.to(coords.device)
-        id = int(flip_coin)
+        id = 1 - int(flip_coin)
 
-        r = torch.cdist(coords, self.pmt_coords[id])
+        r = torch.cdist(coords, self.pmt_coords[id], p=2)
         r_sq = r ** 2
         displace = coords[:, None, 0] - self.pmt_coords[id][None,:,0]
-        #mask_cathode = torch.abs(displace) <= (0.5*self.lx + self.gap_x - 0.5*self.cathode_gap)
 
         # Optimize the final return operation, in-place operations if possible
-        sin_angle = displace / r  # Sin angle calculation
-        angle_rad = torch.arcsin(sin_angle)  # Use pre-calculated sin_angle
-        pmt_solid_angle = self.pmt_radius**2 * sin_angle**2 / r_sq
-        # r in mm, multiply 1.E+6 to bring visibility to m^-2
-        visi_factor = 1.E+6 * pmt_solid_angle / r_sq / 4
+        sin_angle = torch.abs(displace) / r  # Sin angle calculation
+        sin_sq_angle = sin_angle ** 2
+        angle_rad = torch.asin(sin_angle)
+        pmt_xsec = self.pmt_radius**2 * (1 - sin_sq_angle)
+        visi_factor = pmt_xsec / r_sq / 4
+
         self.tof = r / self.speed_of_light
-
-        '''
-        if flip_coin:
-            visibility = torch.stack((visi_factor, torch.zeros_like(visi_factor)), dim=-1)
-            angle_rad = torch.stack((ang_rad, torch.zeros_like(angle_rad)), dim=-1)
-            self.tof = torch.stack((self.tof, torch.zeros_like(self.tof)), dim=-1)
-        else:
-            visibility = torch.stack((torch.zeros_like(visi_factor), visi_factor), dim=-1)
-            angle_rad = torch.stack((torch.zeros_like(angle_rad), angle_rad), dim=-1)
-            self.tof = torch.stack((torch.zeros_like(self.tof), self.tof), dim=-1)
-        '''
-
         return visi_factor, angle_rad
 
     @property

@@ -20,7 +20,8 @@ class MCset(Dataset):
         self.visi_factor = []
         self.eff_values = []
         self.angle_values = []
-        self.distance_values = []
+        #self.distance_values = []
+        #self.cos2ang = []
         self.time_of_flight_values = []
 
         #self.load(fname)
@@ -29,13 +30,13 @@ class MCset(Dataset):
         """
         Load the photon info and pmt efficiency in the specified h5 file
         The h5 file must include these datasets:
-            '/geometry/pmt/positions' (3, n_pmts): pmt coordinates
-            '/geometry/photon/origins' (3, n_photon_origins): position of the photons
-            '/data/visibility' (n_photon_origins, n_pmts, 1): visibility of the photons
-            '/data/pmt_efficiency' (n_photon_origins, n_pmts, 1): efficiency of the pmts
-            '/data/angle' (n_photon_origins, n_pmts, 1): angle of the photons
-            '/data/distance' (n_photon_origins, n_pmts, 1): distance of the photons
-            '/data/time_of_flight' (n_photon_origins, n_pmts, 1): time of flight of the photons
+            '/geometry/pmt/positions' (n_pmts, 3): pmt coordinates
+            '/geometry/photon/origins' (n_photon_origins, 3): position of the photons
+            '/data/visibility' (n_photon_origins, n_pmts): visibility of the photons
+            '/data/pmt_efficiency' (n_photon_origins, n_pmts): efficiency of the pmts
+            '/data/angle' (n_photon_origins, n_pmts): angle of the photons
+            '/data/distance' (n_photon_origins, n_pmts): distance of the photons
+            '/data/time_of_flight' (n_photon_origins, n_pmts): time of flight of the photons
 
         Parameters:
         -----------
@@ -58,20 +59,22 @@ class MCset(Dataset):
                 self.eff_values.append(f['/data/pmt_efficiency'][:])
                 self.angle_values.append(f['/data/angle'][:])
                 #self.distance_values.append(f['/data/distance'][:])
+                #self.cos2ang.append(f['/data/cos2ang'][:])
                 self.time_of_flight_values.append(f['/data/time_of_flight'][:])
 
-        self._pmt_coords = np.array(self._pmt_coords)
-        n_pmt = self._pmt_coords[0].shape[0]
+        self._pmt_coords = np.squeeze(np.array(self._pmt_coords), axis = 0)
+        n_pmt = self._pmt_coords.shape[0]*self._pmt_coords.shape[1]
         #n_photon_origins = self.photon_origins[0].shape[0]
 
         self.photon_origins = np.array(self.photon_origins).reshape(-1, 3)
-        #self._n_photon = np.array(self._n_photon).reshape(-1, n_photon_origins)
+        #self._n_photon = np.array(self._n_photon)
         self.photon_times = np.array(self.photon_times).reshape(-1, 1)
-        self.visi_factor = np.array(self.visi_factor).reshape(-1, n_pmt)
-        self.eff_values = np.array(self.eff_values).reshape(-1, n_pmt)
-        self.angle_values = np.array(self.angle_values).reshape(-1, n_pmt)
-        #self.distance_values = np.array(self.distance_values).reshape(-1, n_pmt)
-        self.time_of_flight_values = np.array(self.time_of_flight_values).reshape(-1, n_pmt)
+        self.visi_factor = np.transpose(np.array(self.visi_factor), (1, 0, 2, 3)).reshape(2, -1, int(n_pmt/2))
+        self.eff_values = np.transpose(np.array(self.eff_values), (1, 0, 2, 3)).reshape(2, -1, int(n_pmt/2))
+        self.angle_values = np.transpose(np.array(self.angle_values),  (1, 0, 2, 3)).reshape(2, -1, int(n_pmt/2))
+        #self.cos2ang = np.transpose(np.array(self.cos2ang), (1, 0, 2, 3)).reshape(2, -1, int(n_pmt/2))
+        #self.distance_values = np.transpose(np.array(self.distance_values), (1, 0, 2, 3)).reshape(2, -1, int(n_pmt/2))
+        self.time_of_flight_values = np.transpose(np.array(self.time_of_flight_values), (1, 0, 2, 3)).reshape(2, -1, int(n_pmt/2))
     @property
     def pmts(self):
         return self._pmt_coords
@@ -83,6 +86,8 @@ class MCset(Dataset):
         self.visi_factor = torch.tensor(self.visi_factor).to(device)
         self.eff_values = torch.tensor(self.eff_values).to(device)
         self.angle_values = torch.tensor(self.angle_values).to(device)
+        #self.cos2ang = torch.tensor(self.cos2ang).to(device)
+        #self.distance_values = torch.tensor(self.distance_values).to(device)
         torch.cuda.synchronize()
         return self
 
@@ -111,6 +116,7 @@ class MCset(Dataset):
             'visibility': self.visi_factor[idx],
             'pmt_efficiency': self.eff_values[idx],
             'angle': self.angle_values[idx],
+            #'cos2ang': self.cos2ang[idx],
             #'distance': self.distance_values[idx],
             'time_of_flight': self.time_of_flight_values[idx]
         }

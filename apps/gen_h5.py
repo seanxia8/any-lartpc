@@ -61,15 +61,17 @@ def gen_h5_photon(cfg:dict):
     #efficiency_values = pmt_model.pmt_eff
 
     if flip_coin:
-        visi_factor = torch.stack((visi_factor, torch.zeros_like(visi_factor)), dim=-1)
-        angle_values = torch.stack((angle_values, torch.zeros_like(angle_values)), dim=-1)
-        time_of_flight_values = torch.stack((lartpc.tof, torch.zeros_like(lartpc.tof)), dim=-1)
-        efficiency_values = torch.stack((pmt_model.pmt_eff, torch.zeros_like(pmt_model.pmt_eff)), dim=-1)
+        visi_factor = torch.stack((visi_factor, torch.zeros_like(visi_factor)), dim=0)
+        angle_values = torch.stack((angle_values, torch.zeros_like(angle_values)), dim=0)
+        #cos2ang = torch.stack((cos2ang, torch.zeros_like(cos2ang)), dim=0)
+        time_of_flight_values = torch.stack((lartpc.tof, torch.zeros_like(lartpc.tof)), dim=0)
+        efficiency_values = torch.stack((pmt_model.pmt_eff, torch.zeros_like(pmt_model.pmt_eff)), dim=0)
     else:
-        visi_factor = torch.stack((torch.zeros_like(visi_factor), visi_factor), dim=-1)
-        angle_values = torch.stack((torch.zeros_like(angle_values), angle_values), dim=-1)
-        time_of_flight_values = torch.stack((torch.zeros_like(lartpc.tof), lartpc.tof), dim=-1)
-        efficiency_values = torch.stack((torch.zeros_like(pmt_model.pmt_eff), pmt_model.pmt_eff), dim=-1)
+        visi_factor = torch.stack((torch.zeros_like(visi_factor), visi_factor), dim=0)
+        angle_values = torch.stack((torch.zeros_like(angle_values), angle_values), dim=0)
+        #cos2ang = torch.stack((torch.zeros_like(cos2ang), cos2ang), dim=0)
+        time_of_flight_values = torch.stack((torch.zeros_like(lartpc.tof), lartpc.tof), dim=0)
+        efficiency_values = torch.stack((torch.zeros_like(pmt_model.pmt_eff), pmt_model.pmt_eff), dim=0)
 
 
     with h5py.File(out_filename, 'w') as f:
@@ -82,11 +84,11 @@ def gen_h5_photon(cfg:dict):
         pmt_group.create_dataset("positions", data=lartpc.pmt_coords.detach().cpu().numpy())
         photon_group.create_dataset("origins", data=photon_origins.detach().cpu().numpy())
         photon_group.create_dataset("times", data = t_photon.detach().cpu().numpy())
-        #photon_group.create_dataset("n_photon", data=n_photon.numpy())
         data_group.create_dataset("visibility", data=visi_factor.detach().cpu().numpy())
         data_group.create_dataset("pmt_efficiency", data=efficiency_values.detach().cpu().numpy())
         data_group.create_dataset("angle", data=angle_values.detach().cpu().numpy())
-        #data_group.create_dataset("distance", data=distance_values.detach().cpu().numpy())
+        #data_group.create_dataset("cos2ang", data=cos2ang.detach().cpu().numpy())
+        #data_group.create_dataset("distance", data=r.detach().cpu().numpy())
         data_group.create_dataset("time_of_flight", data=time_of_flight_values.detach().cpu().numpy())
 
     print(f"HDF5 file {out_filename} written successfully.")

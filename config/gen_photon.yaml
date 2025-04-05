@@ -15,7 +15,7 @@ detector:
     pmt_tts: general
     t_threshold: 0.05
     charge_range: 10
-    charge_resolution: 100
+    charge_resolution: 100.2
     time_min: -5
     time_max: 15
     time_resolution: 100
